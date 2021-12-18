@@ -1,0 +1,15 @@
+#include<stdio.h>
+int main (void)
+{
+//single line
+  
+printf("Hello");
+/*Multi
+Line 
+    Comment
+
+*/
+printf("World");
+return 0;
+}
+
