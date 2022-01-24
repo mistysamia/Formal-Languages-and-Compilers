@@ -181,30 +181,6 @@ int getVariableValue(char strInt[], char scopeName[]) {
   }
   return -10001;
 }
-
-
-int updateVariable(char strInt[], char scopeName[],char updateVar[]) {
-  printf("tadaaqa %s %s\n", strInt, scopeName);
-  for (int i = 0; i < serialNo; i++) {
-    printf("%s %s %s %s %s %s \n", tableStore[i].no, tableStore[i].name,
-           tableStore[i].id, tableStore[i].data, tableStore[i].scope,
-           tableStore[i].value);
-  }
-
-  for (int i = 0; i < serialNo; i++) {
-    printf("no %s x  %s  x  %s  x  %s\n", strInt, tableStore[i].name, scopeName,
-           tableStore[i].scope);
-    // printf("no %s x  %s  \n", tableStore[i].name, strInt);
-    if (strcmp(tableStore[i].name, strInt) == 0 &&
-        strcmp(tableStore[i].scope, scopeName) == 0) {  
-      strcpy(tableStore[i].value,updateVar);
-      printf("Fqinal  %s\n", tableStore[i].value);
-      return 0;
-    }
-  }
-  return -1;
-}
-
 /******************************************
 *********** Keyword **********************
 ******************************************/
@@ -651,11 +627,11 @@ int main() {
   for (int i = 0; i < outputIndx; i++) {
     int temp = -1, valueAssign = 0, ifId = 0;
 
-    printf("nowzs11 %c %c %c %c %c %c %d \n", finalOutput[i],
-           finalOutput[i + 1], finalOutput[i + 2], finalOutput[i + 3],
-           finalOutput[i + 4], finalOutput[i + 5], i);
+    printf("nowzs11 %c %c %c %c %c %c %d \n", finalOutput[i], finalOutput[i + 1],
+           finalOutput[i + 2], finalOutput[i + 3], finalOutput[i + 4],
+           finalOutput[i + 5], i);
 
-    printf("ssxdc %d  ", ifId);
+            printf("ssxdc %d  ", ifId);   
     if (i + 4 < outputIndx && finalOutput[i] == '[' &&
         finalOutput[i + 1] == 'i' && finalOutput[i + 2] == 'd') {
       ifId = 1;
@@ -694,7 +670,7 @@ int main() {
               tempId = frontIdentifier(i + 4);
 
             printf("5 %d %d %d %c %d %s %s \n", i, outputIndx, valueAssign,
-                   finalOutput[i], tempId, tempValue.name, tempValue.data);
+                   finalOutput[i], tempId,tempValue.name,tempValue.data);
             if (tempId != -1 || valueAssign) {
 
               if (tempId != -1)
@@ -712,22 +688,82 @@ int main() {
 
                   // printf("f  %s  %d %d", tableStore[serialNo].name,
                   // serialNo,tempId);
+                  sprintf(tableStore[serialNo].no, "%d", serialNo);
+                  if (!valueAssign)
+                    strcpy(tableStore[serialNo].name, tempValue.name);
+                  strcpy(tableStore[serialNo].id, "var");
+                  strcpy(tableStore[serialNo].data, tempValue.data);
+                  if (funcName[0] == '\0') {
+                    strcpy(tableStore[serialNo].scope, "global");
+                  } else {
+                    strcpy(tableStore[serialNo].scope, funcName);
+                  }
+                  printf("\nspecial %d x  %s x %s  \n", tempId, storeOperation,
+                         tempValue);
+                  if (valueAssign) {
+                    if (tempId != -1) {
+                      for (int jk = 0; jk < strlen(tempValue.name); jk++) {
+                        storeOperation[storeIndx++] = tempValue.name[jk];
+                      }
+                      printf("ssssd\n");
+                    }
 
-                  char tempOpSave, strInt[1000];
+                    char tempOpSave, strInt[1000];
 
-                  int indxStr = 0, tempValuOp, result = 0;
-                  for (int indxStrInt = 0; indxStrInt < strlen(storeOperation);
-                       indxStrInt++) {
+                    int indxStr = 0, tempValuOp, result = 0;
+                    for (int indxStrInt = 0;
+                         indxStrInt < strlen(storeOperation); indxStrInt++) {
 
-                    if (storeOperation[indxStrInt] == '+' ||
-                        storeOperation[indxStrInt] == '-' ||
-                        storeOperation[indxStrInt] == '/' ||
-                        storeOperation[indxStrInt] == '*' ||
-                        storeOperation[indxStrInt] == '%') {
-                      printf("above %s \n", strInt);
+                      if (storeOperation[indxStrInt] == '+' ||
+                          storeOperation[indxStrInt] == '-' ||
+                          storeOperation[indxStrInt] == '/' ||
+                          storeOperation[indxStrInt] == '*' ||
+                          storeOperation[indxStrInt] == '%') {
+                        printf("above %s \n", strInt);
 
+                        int tempVariableValue = -10001;
+                        printf("nope %s\n", funcName);
+                        if (funcName[0] == '\0') {
+                          tempVariableValue =
+                              getVariableValue(strInt, "global");
+                        } else {
+                          tempVariableValue =
+                              getVariableValue(strInt, funcName);
+                        }
+
+                        if (tempVariableValue != -10001) {
+                          memset(strInt, 0, sizeof(strInt));
+                          sprintf(strInt, "%d", tempVariableValue);
+                        }
+
+                        if (tempOpSave == '\0') {
+                          tempValuOp = atoi(strInt);
+                        } else {
+                          int nx = atoi(strInt);
+                          if (tempOpSave == '+')
+                            tempValuOp += nx;
+                          else if (tempOpSave == '-')
+                            tempValuOp -= nx;
+                          else if (tempOpSave == '/')
+                            tempValuOp /= nx;
+                          else if (tempOpSave == '*')
+                            tempValuOp *= nx;
+                          else if (tempOpSave == '%')
+                            tempValuOp %= nx;
+                        }
+                        tempOpSave = storeOperation[indxStrInt];
+                        printf("above down %d  %s ", tempValuOp, strInt);
+                        memset(strInt, 0, sizeof(strInt));
+                        printf("c  %s k\n", strInt);
+                        indxStr = 0;
+                      } else {
+                        strInt[indxStr++] = storeOperation[indxStrInt];
+                      }
+                    }
+                    if (tempOpSave != '\0') {
+                      printf("inss %s %c\n", strInt, tempOpSave);
                       int tempVariableValue = -10001;
-                      printf("nope %s\n", funcName);
+                      printf("nope1 %s\n", funcName);
                       if (funcName[0] == '\0') {
                         tempVariableValue = getVariableValue(strInt, "global");
                       } else {
@@ -738,87 +774,28 @@ int main() {
                         memset(strInt, 0, sizeof(strInt));
                         sprintf(strInt, "%d", tempVariableValue);
                       }
-
-                      if (tempOpSave == '\0') {
-                        tempValuOp = atoi(strInt);
-                      } else {
-                        int nx = atoi(strInt);
-                        if (tempOpSave == '+')
-                          tempValuOp += nx;
-                        else if (tempOpSave == '-')
-                          tempValuOp -= nx;
-                        else if (tempOpSave == '/')
-                          tempValuOp /= nx;
-                        else if (tempOpSave == '*')
-                          tempValuOp *= nx;
-                        else if (tempOpSave == '%')
-                          tempValuOp %= nx;
-                      }
-                      tempOpSave = storeOperation[indxStrInt];
-                      printf("above down %d  %s ", tempValuOp, strInt);
-                      memset(strInt, 0, sizeof(strInt));
-                      printf("c  %s k\n", strInt);
-                      indxStr = 0;
-                    } else {
-                      strInt[indxStr++] = storeOperation[indxStrInt];
+                      int nx = atoi(strInt);
+                      if (tempOpSave == '+')
+                        tempValuOp += nx;
+                      else if (tempOpSave == '-')
+                        tempValuOp -= nx;
+                      else if (tempOpSave == '/')
+                        tempValuOp /= nx;
+                      else if (tempOpSave == '*')
+                        tempValuOp *= nx;
+                      else if (tempOpSave == '%')
+                        tempValuOp %= nx;
+                      tempOpSave = '\0';
+                      sprintf(storeOperation, "%d", tempValuOp);
                     }
-                  }
-                  if (tempOpSave != '\0') {
-                    printf("inss %s %c\n", strInt, tempOpSave);
-                    int tempVariableValue = -10001;
-                    printf("nope1 %s\n", funcName);
-                    if (funcName[0] == '\0') {
-                      tempVariableValue = getVariableValue(strInt, "global");
-                    } else {
-                      tempVariableValue = getVariableValue(strInt, funcName);
-                    }
+                    strcpy(tableStore[serialNo].value, storeOperation);
 
-                    if (tempVariableValue != -10001) {
-                      memset(strInt, 0, sizeof(strInt));
-                      sprintf(strInt, "%d", tempVariableValue);
-                    }
-                    int nx = atoi(strInt);
-                    if (tempOpSave == '+')
-                      tempValuOp += nx;
-                    else if (tempOpSave == '-')
-                      tempValuOp -= nx;
-                    else if (tempOpSave == '/')
-                      tempValuOp /= nx;
-                    else if (tempOpSave == '*')
-                      tempValuOp *= nx;
-                    else if (tempOpSave == '%')
-                      tempValuOp %= nx;
-                    tempOpSave = '\0';
-                    sprintf(storeOperation, "%d", tempValuOp);
-                  }
-                  strcpy(tableStore[serialNo].value, storeOperation);
-
-                  printf("hey you %d", tempValuOp);
-                } else {
-                  strcpy(tableStore[serialNo].value, "");
-                }
-
-                clr();
-                sprintf(tableStore[serialNo].no, "%d", serialNo);
-                if (!valueAssign)
-                  strcpy(tableStore[serialNo].name, tempValue.name);
-                strcpy(tableStore[serialNo].id, "var");
-                strcpy(tableStore[serialNo].data, tempValue.data);
-                if (funcName[0] == '\0') {
-                  strcpy(tableStore[serialNo].scope, "global");
-                } else {
-                  strcpy(tableStore[serialNo].scope, funcName);
-                }
-                printf("\nspecial %d x  %s x %s  \n", tempId, storeOperation,
-                       tempValue);
-                if (valueAssign) {
-                  if (tempId != -1) {
-                    for (int jk = 0; jk < strlen(tempValue.name); jk++) {
-                      storeOperation[storeIndx++] = tempValue.name[jk];
-                    }
-                    printf("ssssd\n");
+                    printf("hey you %d", tempValuOp);
+                  } else {
+                    strcpy(tableStore[serialNo].value, "");
                   }
 
+                  clr();
                   if (finalOutput[i + 5] == ',') {
                     strcpy(tempValue.data, tableStore[serialNo].data);
                     memset(storeOperation, 0, sizeof(storeOperation));
@@ -855,10 +832,10 @@ int main() {
                   strcpy(tableStore[serialNo].name, tempValue.name);
                   strcpy(tableStore[serialNo].id, "func");
                   strcpy(tableStore[serialNo].data, tempValue.data);
-                  if (finalOutput[i + 5] == ')')
-                    strcpy(tableStore[serialNo].scope, funcName);
+                  if(finalOutput[i + 5] == ')')
+                   strcpy(tableStore[serialNo].scope, funcName);
                   else
-                    strcpy(tableStore[serialNo].scope, "global");
+                  strcpy(tableStore[serialNo].scope, "global");
 
                   if (storeOperation[0] != '\0')
                     strcpy(tableStore[serialNo].value, storeOperation);
@@ -929,7 +906,7 @@ int main() {
                   strcpy(tableStore[serialNo].name, tempValue.name);
                   tempId = -1;
                   printf(" %d %c\n", i, finalOutput[i]);
-
+                  
                 } else if (finalOutput[i + 4] == '+' &&
                            finalOutput[i + 5] == '+') {
                   i = i + 7;
@@ -984,7 +961,7 @@ int main() {
                     printf(" in %c ", storeOperation[storeIndx]);
                     storeIndx++;
                   }
-                  storeOperation[storeIndx] = '\0';
+                  storeOperation[storeIndx]='\0';
                   printf("\nx %s x %s\n", tempValue.number, storeOperation);
 
                 } else {
