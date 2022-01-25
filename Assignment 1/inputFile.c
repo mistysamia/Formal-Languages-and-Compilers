@@ -4,6 +4,8 @@
 
 
 int main() {
+  
+  printf("\n\nEnter your input Code & write 'end' to finish input:\n\n\n");
   FILE *file;
   char str[100], save[100], printoutput[100], c;
   int in = 0, singlecomment = 0, multicomment = 0, indx = 0;
