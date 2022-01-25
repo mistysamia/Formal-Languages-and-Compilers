@@ -255,6 +255,7 @@ int checkUnknown(int i, int isPrint) {
 
 int main() {
 
+  printf("\n\nEnter your input Code & write 'end' to finish input:\n\n\n");
   // input portion
   file = fopen("inputfile.txt", "w");
   while (1) {
