@@ -5,7 +5,7 @@
 
 FILE *file, *file1;
 char str[3000], save[3000], printoutput[3000], finalOutput[3000], c,
-    saveoutput[3000], separateIdOutput[3000];
+    saveoutput[3000], separateIdOutput[3000], operatorVariable[1000];
 int in = 0, singlecomment = 0, multicomment = 0, indx = 0, outputIndx = 0,
     saveOutputIndx = 0, separateIdIndx = 0;
 
@@ -18,6 +18,19 @@ struct symbolTable {
 
 struct symbolTable tempValue;
 struct symbolTable tableStore[3000];
+
+int updateVariable(char strInt[], char scopeName[], char updateVar[]) {
+
+  for (int i = 0; i < serialNo; i++) {
+    if (strcmp(tableStore[i].name, strInt) == 0 &&
+        strcmp(tableStore[i].scope, scopeName) == 0) {
+      strcpy(tableStore[i].value, updateVar);
+
+      return 0;
+    }
+  }
+  return -1;
+}
 
 int frontOperator(int i) {
   const char operators[40][10] = {
@@ -60,12 +73,11 @@ int frontKeyword(int i) {
                                  "signed", "unsigned", "void",   "FILE"};
 
   for (int j = 0; j < 12; j++) {
-    printf("\n");
     int length = strlen(keywords[j]);
     if ((length - 1) + i < outputIndx) {
       int equal = 0;
       for (int t = 0; t < length; t++) {
-        printf("yeaa %c %c \n", keywords[j][t], finalOutput[i + t]);
+
         if (keywords[j][t] != finalOutput[i + t]) {
           equal = 1;
           break;
@@ -76,7 +88,7 @@ int frontKeyword(int i) {
         for (int k = 0; k < length; k++) {
           tempValue.data[k] = keywords[j][k];
         }
-        printf("ghfgh %s\n", tempValue.data);
+
         return (length - 1) + i;
       }
     }
@@ -91,13 +103,9 @@ int frontIdentifier(int i) {
   memset(demo, 0, sizeof(demo));
   if ((finalOutput[i] >= 'a' && finalOutput[i] <= 'z') ||
       (finalOutput[i] >= 'A' && finalOutput[i] <= 'Z')) {
-    printf("shit %c %c %c %c %c %c %c\n", finalOutput[i], finalOutput[i + 1],
-           finalOutput[i + 2], finalOutput[i + 3], finalOutput[i + 4],
-           finalOutput[i + 5], finalOutput[i + 6]);
 
     int brac = 0;
     while (1) {
-      printf("%c %d ", finalOutput[demoIndx], brac);
       if (((finalOutput[demoIndx] >= 'a' && finalOutput[demoIndx] <= 'z') ||
            (finalOutput[demoIndx] >= 'A' && finalOutput[demoIndx] <= 'Z') ||
            (finalOutput[demoIndx] >= '0' && finalOutput[demoIndx] <= '9') ||
@@ -116,15 +124,13 @@ int frontIdentifier(int i) {
                  frontSeparator(demoIndx) == -4 ||
                  frontOperator(demoIndx) == -4) {
 
-        printf("\ns d ewd  %s \n", demo);
         if (demo == "num" || demo == "sep" || demo == "op" || demo == "par" ||
             demo == "" || demo == "unwn") {
           return -1;
         }
-        printf("sd %s\n", demo);
-        for (int j = 0; j < demoIn; j++) {
-          tempValue.name[j] = demo[j];
-        }
+
+        strcpy(tempValue.name, demo);
+
         return demoIndx - 1;
       } else {
         break;
@@ -140,42 +146,32 @@ int frontNumber(int i) {
   char tempNum[1000];
   memset(tempNum, 0, sizeof(tempNum));
   tempValue.number[0] = '\0';
-  printf("hereIm %c %c %c %c %c %s \n", finalOutput[i], finalOutput[i + 1],
-         finalOutput[i + 2], finalOutput[i + 3], finalOutput[i + 4],
-         tempValue.number);
+
   while (1) {
     if ((finalOutput[i] >= '0' && finalOutput[i] <= '9') ||
         finalOutput[i] == '.') {
-      printf("%c %s ", finalOutput[i], tempValue.number);
+
       tempNum[valueIndx++] = finalOutput[i++];
-      printf(" %s x \n", tempValue.number);
+
     } else {
       break;
     }
   }
   strcpy(tempValue.number, tempNum);
-  printf("  new  %s x\n", tempValue.number);
+
   return i - 1;
 }
 
 int getVariableValue(char strInt[], char scopeName[]) {
-  printf("tadaaa %s %s\n", strInt, scopeName);
-  for (int i = 0; i < serialNo; i++) {
-    printf("%s %s %s %s %s %s \n", tableStore[i].no, tableStore[i].name,
-           tableStore[i].id, tableStore[i].data, tableStore[i].scope,
-           tableStore[i].value);
-  }
 
   for (int i = 0; i < serialNo; i++) {
-    printf("no %s x  %s  x  %s  x  %s\n", strInt, tableStore[i].name, scopeName,
-           tableStore[i].scope);
-    // printf("no %s x  %s  \n", tableStore[i].name, strInt);
+
     if (strcmp(tableStore[i].name, strInt) == 0 &&
         strcmp(tableStore[i].scope, scopeName) == 0) {
       char tempBack[100];
       memset(tempBack, 0, sizeof(tempBack));
       strcpy(tempBack, tableStore[i].value);
-      printf("Final %s %s\n", tempBack, tableStore[i].value);
+
       return atoi(tempBack);
     }
   }
@@ -447,6 +443,7 @@ void clr() {
 
 int main() {
 
+  printf("Enter your input Code :\n");
   // input portion
   file = fopen("inputfile.txt", "w");
   while (1) {
@@ -610,42 +607,42 @@ int main() {
   fputs(separateIdOutput, file1);
   fclose(file1);
 
-  // Printint Portion
-  // file = fopen("separateIdOutputfile.txt", "r");
-  // while ((c = fgetc(file)) != EOF)
-  //   printf("%c", c);
-  // fclose(file);
+  // Printint Portion with keyword, id ,number, separator ,unknown,
+  // paranthesis
 
-  // Printint Portion
-  // file = fopen("outputfile.txt", "r");
-  // while ((c = fgetc(file)) != EOF) {
+  printf("\n\nPrinting with keyword, id ,number, separator ,unknown, "
+         "paranthesis:\n \n");
+  file = fopen("outputfile.txt", "r");
+  while ((c = fgetc(file)) != EOF) {
+    printf("%c", c);
+  }
+  fclose(file);
+  printf("\n\n");
 
-  // }
-  // fclose(file);
+  // Printint Portion only with id
+
+  printf("Printing only with id :\n \n");
+  file = fopen("separateIdOutputfile.txt", "r");
+  while ((c = fgetc(file)) != EOF)
+    printf("%c", c);
+  fclose(file);
+  printf("\n\n");
 
   char funcName[1000];
   for (int i = 0; i < outputIndx; i++) {
     int temp = -1, valueAssign = 0, ifId = 0;
 
-    printf("nowzs11 %c %c %c %c %c %c %d \n", finalOutput[i], finalOutput[i + 1],
-           finalOutput[i + 2], finalOutput[i + 3], finalOutput[i + 4],
-           finalOutput[i + 5], i);
-
-            printf("ssxdc %d  ", ifId);   
     if (i + 4 < outputIndx && finalOutput[i] == '[' &&
         finalOutput[i + 1] == 'i' && finalOutput[i + 2] == 'd') {
       ifId = 1;
     }
-    printf("  %d\n", ifId);
+
     if ((i + 4 < outputIndx && finalOutput[i] == '[' &&
          finalOutput[i + 1] == 'k' && finalOutput[i + 2] == 'w') ||
         ifId || valueAssign) {
 
       if (!ifId)
         temp = frontKeyword(i + 4);
-      printf("out %d %d %c %c %c %c %c  %s\n", i, ifId, finalOutput[i],
-             finalOutput[i + 1], finalOutput[i + 2], finalOutput[i + 3],
-             finalOutput[i + 4], tempValue.data);
 
       if (temp != -1 || valueAssign || ifId) {
 
@@ -658,54 +655,32 @@ int main() {
 
         while ((loopBreak || valueAssign) && i < outputIndx) {
           int tempId = -1;
-          // printf("in %d\n",valueAssign);
+
           if ((i + 4 < outputIndx && finalOutput[i] == '[' &&
                finalOutput[i + 1] == 'i' && finalOutput[i + 2] == 'd') ||
               valueAssign) {
-            printf("why %d %d %d %c %c %c %c %c  %d \n", i, outputIndx,
-                   valueAssign, finalOutput[i], finalOutput[i + 1],
-                   finalOutput[i + 2], finalOutput[i + 3], finalOutput[i + 4],
-                   tempId);
+
             if (finalOutput[i + 1] == 'i' && finalOutput[i + 2] == 'd')
               tempId = frontIdentifier(i + 4);
 
-            printf("5 %d %d %d %c %d %s %s \n", i, outputIndx, valueAssign,
-                   finalOutput[i], tempId,tempValue.name,tempValue.data);
             if (tempId != -1 || valueAssign) {
 
               if (tempId != -1)
                 i = tempId + 2;
-              printf("whyqq %d %d %d %c %c %c %c %c  %d  %s\n", i, outputIndx,
-                     valueAssign, finalOutput[i], finalOutput[i + 1],
-                     finalOutput[i + 2], finalOutput[i + 3], finalOutput[i + 4],
-                     tempId, tempValue.number);
-              // printf("54  %d %d %d %c %d \n", i, outputIndx, valueAssign,
-              //        finalOutput[i], tempId);
+
               if (i + 5 < outputIndx && finalOutput[i] == '[' &&
                   finalOutput[i + 1] == 's' && finalOutput[i + 2] == 'e' &&
                   finalOutput[i + 3] == 'p') {
                 if (finalOutput[i + 5] == ';' || finalOutput[i + 5] == ',') {
 
-                  // printf("f  %s  %d %d", tableStore[serialNo].name,
-                  // serialNo,tempId);
-                  sprintf(tableStore[serialNo].no, "%d", serialNo);
-                  if (!valueAssign)
-                    strcpy(tableStore[serialNo].name, tempValue.name);
-                  strcpy(tableStore[serialNo].id, "var");
-                  strcpy(tableStore[serialNo].data, tempValue.data);
-                  if (funcName[0] == '\0') {
-                    strcpy(tableStore[serialNo].scope, "global");
-                  } else {
-                    strcpy(tableStore[serialNo].scope, funcName);
-                  }
-                  printf("\nspecial %d x  %s x %s  \n", tempId, storeOperation,
-                         tempValue);
+                  int isUpdate = 0;
+
                   if (valueAssign) {
+
                     if (tempId != -1) {
                       for (int jk = 0; jk < strlen(tempValue.name); jk++) {
                         storeOperation[storeIndx++] = tempValue.name[jk];
                       }
-                      printf("ssssd\n");
                     }
 
                     char tempOpSave, strInt[1000];
@@ -719,10 +694,9 @@ int main() {
                           storeOperation[indxStrInt] == '/' ||
                           storeOperation[indxStrInt] == '*' ||
                           storeOperation[indxStrInt] == '%') {
-                        printf("above %s \n", strInt);
 
                         int tempVariableValue = -10001;
-                        printf("nope %s\n", funcName);
+
                         if (funcName[0] == '\0') {
                           tempVariableValue =
                               getVariableValue(strInt, "global");
@@ -752,18 +726,20 @@ int main() {
                             tempValuOp %= nx;
                         }
                         tempOpSave = storeOperation[indxStrInt];
-                        printf("above down %d  %s ", tempValuOp, strInt);
+
                         memset(strInt, 0, sizeof(strInt));
-                        printf("c  %s k\n", strInt);
+
                         indxStr = 0;
                       } else {
                         strInt[indxStr++] = storeOperation[indxStrInt];
                       }
                     }
+
+                    int lockValue = 0;
                     if (tempOpSave != '\0') {
-                      printf("inss %s %c\n", strInt, tempOpSave);
+
                       int tempVariableValue = -10001;
-                      printf("nope1 %s\n", funcName);
+
                       if (funcName[0] == '\0') {
                         tempVariableValue = getVariableValue(strInt, "global");
                       } else {
@@ -787,12 +763,68 @@ int main() {
                         tempValuOp %= nx;
                       tempOpSave = '\0';
                       sprintf(storeOperation, "%d", tempValuOp);
+                      memset(strInt, 0, sizeof(strInt));
+                      strcpy(strInt, storeOperation);
                     }
-                    strcpy(tableStore[serialNo].value, storeOperation);
 
-                    printf("hey you %d", tempValuOp);
+                    if (funcName[0] == '\0') {
+                      if (strInt[0] != '\0')
+                        isUpdate =
+                            updateVariable(operatorVariable, "global", strInt);
+                      else
+                        isUpdate =
+                            updateVariable(operatorVariable, "global", "");
+                    } else {
+
+                      if (strInt[0] != '\0') {
+                        isUpdate =
+                            updateVariable(operatorVariable, funcName, strInt);
+
+                      } else
+                        isUpdate =
+                            updateVariable(operatorVariable, funcName, "");
+                    }
+                    if (isUpdate == -1)
+                      strcpy(tableStore[serialNo].value, storeOperation);
+
                   } else {
-                    strcpy(tableStore[serialNo].value, "");
+
+                    if (funcName[0] == '\0') {
+
+                      if (operatorVariable[0] != '\0')
+                        isUpdate = updateVariable(operatorVariable, "global",
+                                                  storeOperation);
+                      else {
+                        isUpdate = updateVariable(tempValue.name, "global",
+                                                  storeOperation);
+                      }
+                    } else {
+                      if (operatorVariable[0] != '\0')
+                        isUpdate = updateVariable(operatorVariable, funcName,
+                                                  storeOperation);
+                      else {
+                        isUpdate = updateVariable(tempValue.name, funcName,
+                                                  storeOperation);
+                      }
+                    }
+
+                    if (isUpdate == -1)
+                      strcpy(tableStore[serialNo].value, "");
+                  }
+
+                  if (isUpdate == -1) {
+                    sprintf(tableStore[serialNo].no, "%d", serialNo);
+                    if (operatorVariable[0] != '\0')
+                      strcpy(tableStore[serialNo].name, operatorVariable);
+                    else
+                      strcpy(tableStore[serialNo].name, tempValue.name);
+                    strcpy(tableStore[serialNo].id, "var");
+                    strcpy(tableStore[serialNo].data, tempValue.data);
+                    if (funcName[0] == '\0') {
+                      strcpy(tableStore[serialNo].scope, "global");
+                    } else {
+                      strcpy(tableStore[serialNo].scope, funcName);
+                    }
                   }
 
                   clr();
@@ -800,18 +832,18 @@ int main() {
                     strcpy(tempValue.data, tableStore[serialNo].data);
                     memset(storeOperation, 0, sizeof(storeOperation));
                   }
-                  serialNo++;
-                  printf("\nsep  %d %c %c %c %c \n", i, finalOutput[i],
-                         finalOutput[i + 1], finalOutput[i + 2],
-                         finalOutput[i + 3]);
+                  if (isUpdate == -1)
+                    serialNo++;
+
                   valueAssign = 0;
+
                   if (finalOutput[i + 5] == ';') {
+                    memset(operatorVariable, 0, sizeof(operatorVariable));
                     loopBreak = 0;
                     break;
                   }
 
                   i = i + 7;
-                  printf("herdwp  %d %d \n", valueAssign, loopBreak);
 
                 } else if (finalOutput[i + 5] == '\'') {
                   i = i + 7;
@@ -832,10 +864,10 @@ int main() {
                   strcpy(tableStore[serialNo].name, tempValue.name);
                   strcpy(tableStore[serialNo].id, "func");
                   strcpy(tableStore[serialNo].data, tempValue.data);
-                  if(finalOutput[i + 5] == ')')
-                   strcpy(tableStore[serialNo].scope, funcName);
+                  if (finalOutput[i + 5] == ')')
+                    strcpy(tableStore[serialNo].scope, funcName);
                   else
-                  strcpy(tableStore[serialNo].scope, "global");
+                    strcpy(tableStore[serialNo].scope, "global");
 
                   if (storeOperation[0] != '\0')
                     strcpy(tableStore[serialNo].value, storeOperation);
@@ -843,15 +875,11 @@ int main() {
                     strcpy(tableStore[serialNo].value, "");
                   }
 
-                  strcpy(funcName, tableStore[serialNo].name);
+                  if (finalOutput[i + 5] != ')')
+                    strcpy(funcName, tableStore[serialNo].name);
                   serialNo++;
                   clr();
                   i = i + 6;
-
-                  printf("nowzs %c %c %c %c %c %c %d \n", finalOutput[i],
-                         finalOutput[i + 1], finalOutput[i + 2],
-                         finalOutput[i + 3], finalOutput[i + 4],
-                         finalOutput[i + 5], i);
                   loopBreak = 0;
                   valueAssign = 0;
                   break;
@@ -870,7 +898,6 @@ int main() {
 
                 i = i + 6;
 
-                printf("stri here ");
                 while (i < outputIndx) {
                   if (finalOutput[i] == ']' && finalOutput[i + 1] == '[' &&
                       finalOutput[i + 2] == 'u' && finalOutput[i + 3] == 'n' &&
@@ -895,24 +922,46 @@ int main() {
                 if (finalOutput[i + 4] == '=') {
 
                   valueAssign = 1;
-                  printf("Ss %s %d %d %d c %c %c %c %c %c %c %c %c %d",
-                         tempValue.name, serialNo, valueAssign, i,
-                         finalOutput[i - 2], finalOutput[i - 1], finalOutput[i],
-                         finalOutput[i + 1], finalOutput[i + 2],
-                         finalOutput[i + 3], finalOutput[i + 4],
-                         finalOutput[i + 5], i + 5);
 
                   i = i + 6;
-                  strcpy(tableStore[serialNo].name, tempValue.name);
+                  memset(operatorVariable, 0, sizeof(operatorVariable));
+                  strcpy(operatorVariable, tempValue.name);
                   tempId = -1;
-                  printf(" %d %c\n", i, finalOutput[i]);
-                  
+
                 } else if (finalOutput[i + 4] == '+' &&
                            finalOutput[i + 5] == '+') {
-                  i = i + 7;
+                  i = i + 13;
                   storeOperation[storeIndx++] = '+';
                   storeOperation[storeIndx++] = '+';
 
+                  if (funcName[0] == '\0') {
+                    for (int i = 0; i < serialNo; i++) {
+                      if (strcmp(tableStore[i].name, tempValue.name) == 0 &&
+                          strcmp(tableStore[i].scope, "global") == 0) {
+                        char tempInc[1000];
+                        strcpy(tempInc, tableStore[i].value);
+                        int xValue = atoi(tempInc);
+                        xValue++;
+                        sprintf(tableStore[i].value, "%d", xValue);
+                      }
+                    }
+                  } else {
+                    for (int i = 0; i < serialNo; i++) {
+                      if (strcmp(tableStore[i].name, tempValue.name) == 0 &&
+                          strcmp(tableStore[i].scope, funcName) == 0) {
+                        char tempInc[1000];
+                        strcpy(tempInc, tableStore[i].value);
+                        int xValue = atoi(tempInc);
+                        xValue++;
+                        sprintf(tableStore[i].value, "%d", xValue);
+                      }
+                    }
+                  }
+
+                  loopBreak = 0;
+                  memset(storeOperation, 0, sizeof(storeOperation));
+
+                  clr();
                 } else if (finalOutput[i + 4] == '-' &&
                            finalOutput[i + 5] == '-') {
                   i = i + 7;
@@ -921,7 +970,7 @@ int main() {
                 } else if (finalOutput[i + 4] == '+') {
                   i = i + 6;
                   storeOperation[storeIndx++] = '+';
-                  printf("pkus  %s", storeOperation);
+
                 } else if (finalOutput[i + 4] == '-') {
                   i = i + 6;
                   storeOperation[storeIndx++] = '-';
@@ -944,25 +993,17 @@ int main() {
                 temp = frontNumber(i + 5);
                 if (temp != -1) {
 
-                  printf("number %c %c %c %c %c %c %d %d %c %c %c %d\n",
-                         finalOutput[i], finalOutput[i + 1], finalOutput[i + 2],
-                         finalOutput[i + 3], finalOutput[i + 4],
-                         finalOutput[i + 5], i + 5, temp, finalOutput[temp],
-                         finalOutput[temp + 1], finalOutput[temp + 2],
-                         valueAssign);
                   i = temp + 2;
                   temp = -1;
-                  printf("numberprint  %s b  %d\n ", storeOperation, storeIndx);
                   char tempNumSave[1000];
                   memset(tempNumSave, 0, sizeof(tempNumSave));
                   strcpy(tempNumSave, tempValue.number);
                   for (int jk = 0; jk < strlen(tempNumSave); jk++) {
                     storeOperation[storeIndx] = tempNumSave[jk];
-                    printf(" in %c ", storeOperation[storeIndx]);
+
                     storeIndx++;
                   }
-                  storeOperation[storeIndx]='\0';
-                  printf("\nx %s x %s\n", tempValue.number, storeOperation);
+                  storeOperation[storeIndx] = '\0';
 
                 } else {
                   loopBreak = 0;
@@ -990,13 +1031,13 @@ int main() {
     }
   }
 
-  printf("\n %d\n", outputIndx);
-
+  printf("Sl.No.\t\tName\t\tID\t\tData\t\tScope\t\tValue \n");
   for (int i = 0; i < serialNo; i++) {
-    printf("%s %s %s %s %s %s \n", tableStore[i].no, tableStore[i].name,
-           tableStore[i].id, tableStore[i].data, tableStore[i].scope,
-           tableStore[i].value);
+    printf("%s\t\t%s\t\t%s\t\t%s\t\t%s\t\t%s \n", tableStore[i].no,
+           tableStore[i].name, tableStore[i].id, tableStore[i].data,
+           tableStore[i].scope, tableStore[i].value);
   }
+  printf("\n\n");
 
   return 0;
 }
