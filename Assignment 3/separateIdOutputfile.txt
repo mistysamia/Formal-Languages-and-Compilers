@@ -1,0 +1,1 @@
+[#include<stdio.h>][int][id Name][(][int][id para][)][{][int][id x][=][5][,][id s][=][1][;][id x][=][1][+][id s][;][return][id x][;][}][int][id extra][=][3][;][int][id main][(][)][{][int][id sam][=][10][;][id sam][++][;][int][id s][;][id s][=][3][+][1][-][2][;][char][id ch[100]][=]['][asd][sdf][sdf][[]]['][;][int][id value][;][id value][=][id Name][(][id s][)][;][return][0][;][}]

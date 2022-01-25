@@ -1,0 +1,1 @@
+#include<stdio.h> int Name ( int para ) { int x = 5 , s = 1 ; x = 1 + s ; return x ; } int extra = 3 ; int main ( ) { int sam = 10 ; sam ++ ; int s ; s = 3 + 1 - 2 ; char ch[100] = ' asd sdf sdf [] ' ; int value ; value = Name ( s ) ; return 0 ; } 
