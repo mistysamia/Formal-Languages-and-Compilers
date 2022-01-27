@@ -16,12 +16,17 @@ char xee[5000], xeeMo[5000];
 int xeeIn = 0;
 
 struct symbolTable {
-  char no[100], name[100], id[100], data[100], scope[100], value[100],
-      number[100];
+  char no[1000], name[1000], id[1000], data[1000], scope[1000], value[1000],
+      number[1000];
 };
-
 struct symbolTable tempValue;
 struct symbolTable tableStore[3000];
+
+struct paranthesis {
+  int no, open, close;
+};
+struct paranthesis tempPar;
+struct paranthesis ParStore[3000];
 
 int updateVariable(char strInt[], char scopeName[], char updateVar[]) {
 
@@ -46,7 +51,7 @@ int checkOperatorNewLine(int i, int isOperator) {
   int equal = 0;
   for (int j = 0; j < 40; j++) {
     int length = strlen(operators[j]);
-    if ((length - 1) + i < indx) {
+    if ((length - 1) + i < strlen(xee)) {
       equal = 0;
       for (int t = 0; t < length; t++) {
         if (operators[j][t] != xee[i + t]) {
@@ -101,7 +106,7 @@ int checkKeywordNewLine(int i) {
   for (int j = 0; j < 34; j++) {
     int length = strlen(keywords[j]);
 
-    if ((length - 1) + i < indx) {
+    if ((length - 1) + i < strlen(xee)) {
       int equal = 0;
       for (int t = 0; t < length; t++) {
         if (keywords[j][t] != xee[i + t]) {
@@ -151,6 +156,9 @@ int checkIdentifierNewLine(int i) {
                xee[demoIndx] == ')' ||
                checkSeparatorNewLine(demoIndx, 1) == -4 ||
                checkOperatorNewLine(demoIndx, 1) == -4) {
+      xeeMo[xeeIn++] = 'i';
+      xeeMo[xeeIn++] = 'd';
+      xeeMo[xeeIn++] = ' ';
       for (int j = 0; j < demoIn; j++) {
         xeeMo[xeeIn++] = demo[j];
       }
@@ -664,7 +672,7 @@ int main() {
         saveoutput[saveOutputIndx++] = ' ';
         separateIdOutput[separateIdIndx++] = finalOutput[outputIndx++] = ']';
       }
-      if (printoutput[i] == 'i')
+      if (printoutput[i] != '#' && printoutput[i] != '\n')
         gotInt = 1;
     }
 
@@ -765,7 +773,7 @@ int main() {
         }
         xeeMo[xeeIn++] = '>';
       }
-      if (xee[i] == 'i')
+      if (xee[i] != '#' && xee[i] != '\n')
         gotInt = 1;
     }
     if (xee[i] == '\n') {
@@ -781,7 +789,7 @@ int main() {
       xeeMo[xeeIn++] = ' ';
     }
     if (xee[i] == ' ')
-      xeeMo[xeeIn] == ' ';
+      xeeMo[xeeIn++] = ' ';
     if (gotInt) {
       if (xee[i] == ';' || xee[i] == ',' || xee[i] == '\'' || xee[i] == '"') {
         if (xee[i] == '\'' && !flag1)
@@ -1373,6 +1381,148 @@ int main() {
   file = fopen("modifiedSystaxanalysisFile.txt", "w");
   fputs(symbolTableStore, file);
   fclose(file);
+
+  int isInFunc = 0, isReturn = 0, fir = 0, startIndx = 1, endIndx = 1;
+  for (int i = 0; i < xeeIn; i++) {
+    // printf("lame %c %c %c %c %c %c %d %d %d\n", xeeMo[i], xeeMo[i+1], xeeMo[i+2], xeeMo[i+3], xeeMo[i+4], xeeMo[i+5] ,tempPar.no,isInFunc,isReturn);
+    if(xeeMo[xeeIn]!='\n')
+    {
+      printf("lame 1 %c %d\n",xeeMo[xeeIn],tempPar.no);
+    }
+    else
+    {
+      printf("lame2\n");
+    }
+    if ((xeeMo[i] == '\n' || !fir) && i + 1 < xeeIn) {
+      if (fir)
+        i++;
+
+      fir = 1;
+      char tempSerial[1000];
+      int tempSerialIn = 0;
+
+      while (xeeMo[i] != ' ') {
+        tempSerial[tempSerialIn++] = xeeMo[i++];
+      }
+      i--;
+      tempSerial[tempSerialIn] = '\0';
+      tempPar.no = atoi(tempSerial);
+      ParStore[tempPar.no].no = tempPar.no;
+      ParStore[tempPar.no].open = 0;
+      ParStore[tempPar.no].close = 0;
+    }
+    if (xeeMo[i] == '{') {
+      ParStore[tempPar.no].open++;
+      printf("inss\n");
+    }
+    if (xeeMo[i] == '}') {
+      ParStore[tempPar.no].close++;
+      if (isReturn && isInFunc) {
+        i++;
+        while (1) {
+          if (xeeMo[i] == '{') {
+            ParStore[tempPar.no].open++;
+            i++;
+          }
+
+          if (xeeMo[i] == '}') {
+            ParStore[tempPar.no].close++;
+            i++;
+          }
+          if (xeeMo[i] == '\n') {
+            i--;
+            break;
+          }
+        }
+        if (xeeMo[i] == '\n' || xeeMo[i] == ' ') {
+          printf("oh yes %c %c %c %c %c ", xeeMo[i - 4], xeeMo[i - 3],
+                 xeeMo[i - 2], xeeMo[i - 1], xeeMo[i]);
+        }
+
+        printf("not %d %d\n", startIndx, tempPar.no);
+        endIndx = tempPar.no;
+        while (startIndx <= endIndx) {
+          if (ParStore[startIndx].open > 0 && ParStore[endIndx].close > 0) {
+            ParStore[startIndx].open--;
+            ParStore[endIndx].close--;
+          }
+          if (ParStore[endIndx].close <= 0)
+            endIndx--;
+          if (ParStore[startIndx].open <= 0)
+            startIndx++;
+        }
+        printf("anbv %d %d\n", ParStore[tempPar.no].no,
+               ParStore[tempPar.no].open, ParStore[tempPar.no].close);
+        startIndx = tempPar.no + 1;
+        isReturn = 0, isInFunc = 0;
+        printf("asssa %d %d %c\n", startIndx, tempPar.no, xeeMo[i]);
+      }
+      for (int i = 1; i < tempPar.no; i++) {
+        printf("%d %d %d %d\n", ParStore[i].no, ParStore[i].open,
+               ParStore[i].close, tempPar.no);
+      }
+    }
+    if (xeeMo[i] == 'i' && xeeMo[i + 1] == 'd' && xeeMo[i + 2] == ' ' &&
+        i + 3 < xeeIn) {
+
+      printf("up %d %d\n", startIndx, tempPar.no);
+      for (int i = 1; i < tempPar.no; i++) {
+        printf("%d %d %d %d\n", ParStore[i].no, ParStore[i].open,
+               ParStore[i].close, tempPar.no);
+      }
+
+      i = i + 3;
+      char tempSerial[1000];
+      int tempSerialIn = 0;
+      while (xeeMo[i] != ' ' && xeeMo[i] != '(') {
+        tempSerial[tempSerialIn++] = xeeMo[i++];
+      }
+      i--;
+      tempSerial[tempSerialIn] = '\0';
+      for (int j = 0; j < serialNo; j++) {
+        if (strcmp(tempSerial, tableStore[j].name) == 0 &&
+            strcmp(tableStore[j].id, "func") == 0) {
+          if (isInFunc) {
+            endIndx = tempPar.no - 1;
+            while (startIndx <= endIndx) {
+              if (ParStore[startIndx].open > 0 && ParStore[endIndx].close > 0) {
+                ParStore[startIndx].open--;
+                ParStore[endIndx].close--;
+              }
+
+              if (ParStore[endIndx].close <= 0)
+                endIndx--;
+              if (ParStore[startIndx].open <= 0)
+                startIndx++;
+            }
+          }
+          startIndx = tempPar.no;
+
+          isInFunc = 1;
+          break;
+        }
+      }
+
+      printf("down\n");
+      for (int i = 1; i < tempPar.no; i++) {
+        printf("%d %d %d %d\n", ParStore[i].no, ParStore[i].open,
+               ParStore[i].close, tempPar.no);
+      }
+    }
+    if (xeeMo[i] == 'r' && xeeMo[i + 1] == 'e' && xeeMo[i + 2] == 't' &&
+        xeeMo[i + 3] == 'u' && xeeMo[i + 4] == 'r' && xeeMo[i + 5] == 'n' &&
+        i + 5 < xeeIn) {
+      isReturn = 1;
+
+      i = i + 5;
+      printf("in %d %d %c\n", tempPar.no, startIndx, xeeMo[i]);
+    }
+  }
+
+  for (int i = 1; i < tempPar.no; i++) {
+    printf("%d %d %d\n", ParStore[i].no, ParStore[i].open, ParStore[i].close);
+  }
+  printf("\n");
 
   return 0;
 }
