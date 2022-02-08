@@ -1744,6 +1744,11 @@ int main() {
   }
 
   printf("\n\nSyntax Errors\n\n");
+
+  for (int i = 0; i < errorshowNo; i++) {
+    printf("%s identifiers declared multiple times at scope %s\n",
+           errorShow[i].name, errorShow[i].scope);
+  }
   for (int i = 0; i < ifelseTokenTemp.no; i++) {
     if (ifelseTokenStore[i].store == 1) {
       printf("Unmatched 'else if' at line %d\n", i);
@@ -1783,8 +1788,5 @@ int main() {
     }
   }
 
-  for (int i = 0; i < errorshowNo; i++) {
-    printf("%s identifiers declared multiple times at scope %s\n", errorShow[i].name,errorShow[i].scope);
-  }
   return 0;
 }
