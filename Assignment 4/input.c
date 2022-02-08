@@ -6,12 +6,11 @@
 FILE *file, *file1;
 char str[5000], save[5000], printoutput[5000], finalOutput[5000], c,
     saveoutput[5000], separateIdOutput[5000], operatorVariable[5000],
-    symBolTable[5000], saveWithNo[5000];
+    symBolTable[5000], saveWithNo[5000], duplicacy[5000];
 int in = 0, singlecomment = 0, multicomment = 0, indx = 0, outputIndx = 0,
-    saveOutputIndx = 0, separateIdIndx = 0, saveWithNoIn = 0;
+    saveOutputIndx = 0, separateIdIndx = 0, saveWithNoIn = 0, duplicacyNo = 0;
 
-
-int openCurly = 0, closeCurly = 0, serialNo = 1;
+int openCurly = 0, closeCurly = 0, serialNo = 1, ifElseElseIf = 0;
 
 char xee[5000], xeeMo[5000];
 int xeeIn = 0;
@@ -28,7 +27,21 @@ struct paranthesis {
 };
 struct paranthesis tempCurly, tempPar, tempThirdBrac;
 struct paranthesis CurlyStore[3000], parStore[3000], thirdBrac[3000];
+struct duplicateToken {
+  int no, dupli;
+};
+struct duplicateToken duplicateTokenStore[3000];
 
+struct ifelseToken {
+  int no, store;
+};
+struct ifelseToken ifelseTokenStore[3000], ifelseTokenTemp;
+
+struct errors {
+  char name[1000], scope[1000];
+};
+struct errors errorShow[3000];
+int errorshowNo = 0;
 int updateVariable(char strInt[], char scopeName[], char updateVar[]) {
 
   for (int i = 0; i < serialNo; i++) {
@@ -65,6 +78,9 @@ int checkOperatorNewLine(int i, int isOperator) {
         if (!isOperator) {
           for (int k = 0; k < length; k++) {
             saveWithNo[saveWithNoIn++] = xeeMo[xeeIn++] = operators[j][k];
+            duplicacy[duplicacyNo++] = 'o';
+            duplicacy[duplicacyNo++] = 'p';
+            duplicacy[duplicacyNo++] = ' ';
           }
           return (length - 1) + i;
         } else {
@@ -86,6 +102,13 @@ int checkSeparatorNewLine(int i, int isSeparator) {
       return -4;
     } else {
       saveWithNo[saveWithNoIn++] = xeeMo[xeeIn++] = xee[i];
+      if (xee[i] != '\'' && xee[i] != '"') {
+        duplicacy[duplicacyNo++] = 's';
+        duplicacy[duplicacyNo++] = 'e';
+        duplicacy[duplicacyNo++] = 'p';
+        duplicacy[duplicacyNo++] = ' ';
+      }
+
       return i;
     }
   }
@@ -96,15 +119,15 @@ int checkSeparatorNewLine(int i, int isSeparator) {
 }
 int checkKeywordNewLine(int i) {
 
-  const char keywords[34][20] = {
-      "auto",     "break",  "case",    "continue", "char",     "const",
-      "default",  "do",     "double",  "else",     "enum",     "extern",
-      "float",    "for",    "goto",    "if",       "int",      "long",
-      "register", "return", "short",   "signed",   "sizeof",   "static",
-      "struct",   "switch", "typedef", "union",    "unsigned", "void",
-      "volatile", "while",  "EOF",     "FILE"};
+  const char keywords[35][20] = {
+      "auto",    "break",    "case",    "continue", "char",   "const",
+      "default", "do",       "else if", "double",   "else",   "enum",
+      "extern",  "float",    "for",     "goto",     "if",     "int",
+      "long",    "register", "return",  "short",    "signed", "sizeof",
+      "static",  "struct",   "switch",  "typedef",  "union",  "unsigned",
+      "void",    "volatile", "while",   "EOF",      "FILE"};
 
-  for (int j = 0; j < 34; j++) {
+  for (int j = 0; j < 35; j++) {
     int length = strlen(keywords[j]);
 
     if ((length - 1) + i < strlen(xee)) {
@@ -120,6 +143,9 @@ int checkKeywordNewLine(int i) {
         for (int k = 0; k < length; k++) {
           saveWithNo[saveWithNoIn++] = xeeMo[xeeIn++] = keywords[j][k];
         }
+        duplicacy[duplicacyNo++] = 'k';
+        duplicacy[duplicacyNo++] = 'w';
+        duplicacy[duplicacyNo++] = ' ';
         return (length - 1) + i;
       }
     }
@@ -157,9 +183,12 @@ int checkIdentifierNewLine(int i) {
                xee[demoIndx] == ')' ||
                checkSeparatorNewLine(demoIndx, 1) == -4 ||
                checkOperatorNewLine(demoIndx, 1) == -4) {
-      saveWithNo[saveWithNoIn++] = xeeMo[xeeIn++] = 'i';
-      saveWithNo[saveWithNoIn++] = xeeMo[xeeIn++] = 'd';
-      saveWithNo[saveWithNoIn++] = xeeMo[xeeIn++] = ' ';
+      duplicacy[duplicacyNo++] = saveWithNo[saveWithNoIn++] = xeeMo[xeeIn++] =
+          'i';
+      duplicacy[duplicacyNo++] = saveWithNo[saveWithNoIn++] = xeeMo[xeeIn++] =
+          'd';
+      duplicacy[duplicacyNo++] = saveWithNo[saveWithNoIn++] = xeeMo[xeeIn++] =
+          ' ';
       for (int j = 0; j < demoIn; j++) {
         saveWithNo[saveWithNoIn++] = xeeMo[xeeIn++] = demo[j];
       }
@@ -207,16 +236,15 @@ int frontSeparator(int i) {
 }
 
 int frontKeyword(int i) {
-  const char keywords[12][20] = {"char",   "const",    "double", "else",
-                                 "float",  "int",      "long",   "short",
-                                 "signed", "unsigned", "void",   "FILE"};
-
-  for (int j = 0; j < 12; j++) {
+  const char keywords[15][20] = {"char", "const", "double",  "float",    "int",
+                                 "long", "short", "signed",  "unsigned", "void",
+                                 "FILE", "if",    "else if", "else"};
+  // printf("sss \n");
+  for (int j = 0; j < 14; j++) {
     int length = strlen(keywords[j]);
     if ((length - 1) + i < outputIndx) {
       int equal = 0;
       for (int t = 0; t < length; t++) {
-
         if (keywords[j][t] != finalOutput[i + t]) {
           equal = 1;
           break;
@@ -224,8 +252,12 @@ int frontKeyword(int i) {
       }
       if (!equal) {
 
-        for (int k = 0; k < length; k++) {
-          tempValue.data[k] = keywords[j][k];
+        if (j == 11 || j == 12) {
+          ifElseElseIf = 1;
+        } else if (j != 13) {
+          for (int k = 0; k < length; k++) {
+            tempValue.data[k] = keywords[j][k];
+          }
         }
 
         return (length - 1) + i;
@@ -327,15 +359,15 @@ void preCheckKeyword() {
 }
 int checkKeyword(int i) {
 
-  const char keywords[34][20] = {
-      "auto",     "break",  "case",    "continue", "char",     "const",
-      "default",  "do",     "double",  "else",     "enum",     "extern",
-      "float",    "for",    "goto",    "if",       "int",      "long",
-      "register", "return", "short",   "signed",   "sizeof",   "static",
-      "struct",   "switch", "typedef", "union",    "unsigned", "void",
-      "volatile", "while",  "EOF",     "FILE"};
+  const char keywords[35][20] = {
+      "auto",    "break",    "case",    "continue", "char",   "const",
+      "default", "do",       "else if", "double",   "else",   "enum",
+      "extern",  "float",    "for",     "goto",     "if",     "int",
+      "long",    "register", "return",  "short",    "signed", "sizeof",
+      "static",  "struct",   "switch",  "typedef",  "union",  "unsigned",
+      "void",    "volatile", "while",   "EOF",      "FILE"};
 
-  for (int j = 0; j < 34; j++) {
+  for (int j = 0; j < 35; j++) {
     int length = strlen(keywords[j]);
 
     if ((length - 1) + i < indx) {
@@ -757,9 +789,11 @@ int main() {
 
   xeeIn = 0;
   char serial[5000];
+
   serial[0] = '1';
-  saveWithNo[saveWithNoIn++] = xeeMo[xeeIn++] = serial[0];
-  saveWithNo[saveWithNoIn++] = xeeMo[xeeIn++] = ' ';
+  duplicacy[duplicacyNo++] = saveWithNo[saveWithNoIn++] = xeeMo[xeeIn++] =
+      serial[0];
+  duplicacy[duplicacyNo++] = saveWithNo[saveWithNoIn++] = xeeMo[xeeIn++] = ' ';
   gotInt = 0;
   flag1 = 0, flag2 = 0;
   for (int i = 0; i < strlen(xee); i++) {
@@ -774,19 +808,23 @@ int main() {
         gotInt = 1;
     }
     if (xee[i] == '\n') {
-      saveWithNo[saveWithNoIn++] = xeeMo[xeeIn++] = '\n';
+      duplicacy[duplicacyNo++] = saveWithNo[saveWithNoIn++] = xeeMo[xeeIn++] =
+          '\n';
       int val = getLineNumber(serial);
       char tempStr[5000];
       sprintf(tempStr, "%d", val);
       strcpy(serial, tempStr);
 
       for (int ind = 0; ind < strlen(tempStr); ind++) {
-        saveWithNo[saveWithNoIn++] = xeeMo[xeeIn++] = tempStr[ind];
+        duplicacy[duplicacyNo++] = saveWithNo[saveWithNoIn++] = xeeMo[xeeIn++] =
+            tempStr[ind];
       }
-      saveWithNo[saveWithNoIn++] = xeeMo[xeeIn++] = ' ';
+      duplicacy[duplicacyNo++] = saveWithNo[saveWithNoIn++] = xeeMo[xeeIn++] =
+          ' ';
     }
     if (xee[i] == ' ')
-      saveWithNo[saveWithNoIn++] = xeeMo[xeeIn++] = ' ';
+      duplicacy[duplicacyNo++] = saveWithNo[saveWithNoIn++] = xeeMo[xeeIn++] =
+          ' ';
     if (gotInt) {
       if (xee[i] == ';' || xee[i] == ',' || xee[i] == '\'' || xee[i] == '"') {
         if (xee[i] == '\'' && !flag1)
@@ -828,6 +866,10 @@ int main() {
         if (xee[i] >= '0' && xee[i] <= '9') {
           saveWithNo[saveWithNoIn++] = xeeMo[xeeIn++] = xee[i];
           temp = i;
+          duplicacy[duplicacyNo++] = 'n';
+          duplicacy[duplicacyNo++] = 'u';
+          duplicacy[duplicacyNo++] = 'm';
+          duplicacy[duplicacyNo++] = ' ';
         }
 
         if ((temp == -1) &&
@@ -848,8 +890,8 @@ int main() {
     }
   }
 
-  saveWithNo[saveWithNoIn++] = xeeMo[xeeIn++] = finalOutput[outputIndx++] =
-      '\0';
+  duplicacy[duplicacyNo++] = saveWithNo[saveWithNoIn++] = xeeMo[xeeIn++] =
+      finalOutput[outputIndx++] = '\0';
   printf("\n%s\n", xeeMo);
 
   fputs(finalOutput, file);
@@ -891,6 +933,8 @@ int main() {
   fclose(file);
   printf("\n\n");
 
+  strcpy(errorShow[errorshowNo].name, "n");
+  strcpy(errorShow[errorshowNo++].scope, "main");
   char funcName[1000];
   for (int i = 0; i < outputIndx; i++) {
     int temp = -1, valueAssign = 0, ifId = 0;
@@ -911,6 +955,26 @@ int main() {
 
         if (temp != -1 && !ifId)
           i = temp + 2;
+        if (ifElseElseIf == 1) {
+          // printf("\nprint\n");
+          while (finalOutput[i] != ')') {
+            //    printf("%c", finalOutput[i]);
+            i++;
+          }
+          //  printf("\n");
+          i += 2;
+        }
+
+        ifElseElseIf = 0;
+        // printf("ssssssssd %c %c %c %c %c %c %c %c %c %c %c %c %c %c %d %d %d
+        // "
+        //        "%c bb\n",
+        //        finalOutput[i - 4], finalOutput[i - 3], finalOutput[i - 2],
+        //        finalOutput[i - 1], finalOutput[i], finalOutput[i + 1],
+        //        finalOutput[i + 2], finalOutput[i + 3], finalOutput[i + 4],
+        //        finalOutput[i + 5], finalOutput[i + 6], finalOutput[i + 7],
+        //        finalOutput[i + 8], finalOutput[i + 9], temp, valueAssign,
+        //        ifId, finalOutput[i]);
         temp = -1, ifId = 0;
         int loopBreak = 1, storeIndx = 0;
         char storeOperation[3000], storeName[3000];
@@ -918,14 +982,14 @@ int main() {
 
         while ((loopBreak || valueAssign) && i < outputIndx) {
           int tempId = -1;
-
+          // printf("hereeee \n");
           if ((i + 4 < outputIndx && finalOutput[i] == '[' &&
                finalOutput[i + 1] == 'i' && finalOutput[i + 2] == 'd') ||
               valueAssign) {
 
             if (finalOutput[i + 1] == 'i' && finalOutput[i + 2] == 'd')
               tempId = frontIdentifier(i + 4, finalOutput);
-
+            // printf("innn\n");
             if (tempId != -1 || valueAssign) {
 
               if (tempId != -1)
@@ -1122,7 +1186,7 @@ int main() {
                          finalOutput[i + 1] == 'p' &&
                          finalOutput[i + 2] == 'a' &&
                          finalOutput[i + 3] == 'r') {
-
+                //  printf("\nasasad\n");
                 if (finalOutput[i + 5] == '(' || finalOutput[i + 5] == ')') {
                   sprintf(tableStore[serialNo].no, "%d", serialNo);
                   strcpy(tableStore[serialNo].name, tempValue.name);
@@ -1310,6 +1374,20 @@ int main() {
       }
     }
   }
+
+  for (int i = 0; i < serialNo; i++) {
+    for (int j = i + 1; j < serialNo; j++) {
+      if (strcmp(tableStore[i].name, tableStore[j].name) == 0 &&
+          strcmp(tableStore[i].scope, tableStore[j].scope) == 0 &&
+          strcmp(tableStore[i].data, tableStore[j].data) == 0 &&
+          strcmp(tableStore[i].name, "printf") == 1) {
+        //    printf("kjgbjkj  jkb  %s\n",tableStore[i].name);
+        strcpy(errorShow[errorshowNo].name, tableStore[i].name);
+        strcpy(errorShow[errorshowNo].scope, tableStore[i].scope);
+      }
+    }
+  }
+
   for (int i = 0; i < serialNo; i++) {
     for (int j = i + 1; j < serialNo; j++) {
       if (strcmp(tableStore[i].name, tableStore[j].name) == 0 &&
@@ -1332,6 +1410,54 @@ int main() {
            tableStore[i].scope, tableStore[i].value);
   }
   printf("\n\n");
+
+  /*********************************************
+  ****************** Duplicacy *****************
+  *********************************************/
+
+  const char dupliCheck[7][20] = {"kw",  "op",  "id",  "par",
+                                  "num", "sep", "unwn"};
+
+  int duplicateCountNo = 0;
+
+  char dupliSave[50];
+  for (int i = 0; i < duplicacyNo; i++) {
+    char tempDuplicacy[5000];
+    if (duplicacy[i] >= '0' && duplicacy[i] <= '9') {
+      char tempDupSerial[100];
+      int tempDupSerialNo = 0;
+      memset(dupliSave, 0, sizeof(dupliSave));
+      while (duplicacy[i] >= '0' && duplicacy[i] <= '9') {
+
+        tempDupSerial[tempDupSerialNo++] = duplicacy[i++];
+      }
+      tempDupSerial[tempDupSerialNo++] = '\0';
+
+      duplicateTokenStore[duplicateCountNo].no = atoi(tempDupSerial);
+      duplicateTokenStore[duplicateCountNo++].dupli = 0;
+    }
+    if (duplicacy[i] >= 'a' && duplicacy[i] <= 'z') {
+
+      for (int j = 0; j < 7; j++) {
+        int isEqual = 0;
+        if (i + strlen(dupliCheck[j]) < duplicacyNo) {
+          for (int k = 0; k < strlen(dupliCheck[j]); k++) {
+            if (dupliCheck[j][k] != duplicacy[i + k]) {
+              isEqual = 1;
+              break;
+            }
+          }
+        }
+        if (!isEqual) {
+          if (strcmp(dupliCheck[j], dupliSave) == 0)
+            duplicateTokenStore[duplicateCountNo - 1].dupli = 1;
+          strcpy(dupliSave, dupliCheck[j]);
+          i += strlen(dupliCheck[j]);
+          break;
+        }
+      }
+    }
+  }
 
   char symbolTableStore[3000];
   int symbolTableStoreIndx = 0;
@@ -1409,13 +1535,52 @@ int main() {
       }
       i--;
       tempSerial[tempSerialIn] = '\0';
-      tempThirdBrac.no = tempPar.no = tempCurly.no = atoi(tempSerial);
-      thirdBrac[tempThirdBrac.no].no = parStore[tempPar.no].no =
-          CurlyStore[tempCurly.no].no = tempCurly.no;
+      ifelseTokenTemp.no = tempThirdBrac.no = tempPar.no = tempCurly.no =
+          atoi(tempSerial);
+      ifelseTokenStore[ifelseTokenTemp.no].no = thirdBrac[tempThirdBrac.no].no =
+          parStore[tempPar.no].no = CurlyStore[tempCurly.no].no = tempCurly.no;
+
       thirdBrac[tempThirdBrac.no].open = parStore[tempPar.no].open =
           CurlyStore[tempCurly.no].open = 0;
       thirdBrac[tempThirdBrac.no].close = parStore[tempPar.no].close =
           CurlyStore[tempCurly.no].close = 0;
+    }
+    /******************************
+     *******  for  ********
+     ******************************/
+    if (saveWithNo[i] == 'f' && saveWithNo[i + 1] == 'o' &&
+        saveWithNo[i + 2] == 'r' && i + 2 < saveWithNoIn) {
+      duplicateTokenStore[ifelseTokenTemp.no - 1].dupli = 0;
+      i += 3;
+    }
+
+    /******************************
+     *******  if, else , else if  ********
+     ******************************/
+    if (saveWithNo[i] == 'i' && saveWithNo[i + 1] == 'f' &&
+        i + 1 < saveWithNoIn) {
+      ifelseTokenTemp.store = 1;
+      i += 2;
+    }
+
+    if (saveWithNo[i] == 'e' && saveWithNo[i + 1] == 'l' &&
+        saveWithNo[i + 2] == 's' && saveWithNo[i + 3] == 'e' &&
+        saveWithNo[i + 5] == 'i' && saveWithNo[i + 6] == 'f' &&
+        i + 6 < saveWithNoIn) {
+      if (ifelseTokenTemp.store != 1) {
+        ifelseTokenStore[ifelseTokenTemp.no].store = 1;
+      }
+      i += 7;
+    }
+
+    if (saveWithNo[i] == 'e' && saveWithNo[i + 1] == 'l' &&
+        saveWithNo[i + 2] == 's' && saveWithNo[i + 3] == 'e' &&
+        i + 3 < saveWithNoIn) {
+      if (ifelseTokenTemp.store != 1) {
+        ifelseTokenStore[ifelseTokenTemp.no].store = 2;
+      }
+      ifelseTokenTemp.store = 0;
+      i += 4;
     }
 
     /******************************
@@ -1450,6 +1615,7 @@ int main() {
     if (saveWithNo[i] == '}') {
       CurlyStore[tempCurly.no].close++;
       if (isReturn && isInFunc) {
+        ifelseTokenTemp.store = 0;
         i++;
         while (1) {
           if (saveWithNo[i] == '{')
@@ -1476,7 +1642,7 @@ int main() {
           }
           i++;
         }
- 
+
         int tempStartIndx = 0;
         tempStartIndx = startIndx;
         endIndx = tempCurly.no;
@@ -1494,7 +1660,6 @@ int main() {
         int startIndex2 = tempStartIndx;
         startIndx = tempStartIndx;
         endIndx = tempCurly.no;
-        // printf("not1 %d %d %d\n\n", startIndx, tempCurly.no, endIndx);
 
         while (startIndx <= endIndx && tempStartIndx <= endIndx) {
           if (parStore[startIndx].open > 0 &&
@@ -1512,7 +1677,6 @@ int main() {
 
         tempStartIndx = startIndx = startIndex2;
         endIndx = tempCurly.no;
-        // printf("not1 %d %d %d\n\n", startIndx, tempCurly.no, endIndx);
 
         while (startIndx <= endIndx && tempStartIndx <= endIndx) {
           if (thirdBrac[startIndx].open > 0 &&
@@ -1528,31 +1692,13 @@ int main() {
           if (startIndx > tempStartIndx)
             tempStartIndx = startIndx;
         }
-
-        // printf("\n\ngdf \n");
-        // for (int i = 1; i < tempPar.no; i++) {
-        //   printf("%d %d %d %d\n", parStore[i].no, parStore[i].open,
-        //          parStore[i].close, parStore[i].no);
-        // }
         startIndx = tempCurly.no + 1;
         isReturn = 0, isInFunc = 0;
-        // printf("asssa %d %d %c\n", startIndx, tempCurly.no, saveWithNo[i]);
       }
-      // for (int i = 1; i < tempPar.no; i++) {
-      //   printf("%d %d %d %d\n", parStore[i].no, parStore[i].open,
-      //          parStore[i].close, parStore[i].no);
-      // }
     }
 
     if (saveWithNo[i] == 'i' && saveWithNo[i + 1] == 'd' &&
         saveWithNo[i + 2] == ' ' && i + 3 < saveWithNoIn) {
-
-      // printf("up %d %d\n", startIndx, tempCurly.no);
-      // for (int i = 1; i < tempCurly.no; i++) {
-      //   printf("%d %d %d %d\n", CurlyStore[i].no, CurlyStore[i].open,
-      //          CurlyStore[i].close, tempCurly.no);
-      // }
-
       i = i + 3;
       char tempSerial[1000];
       int tempSerialIn = 0;
@@ -1587,45 +1733,58 @@ int main() {
           break;
         }
       }
-
-      // printf("down\n");
-      // for (int i = 1; i < tempCurly.no; i++) {
-      //   printf("%d %d %d %d\n", CurlyStore[i].no, CurlyStore[i].open,
-      //          CurlyStore[i].close, tempCurly.no);
-      // }
     }
     if (saveWithNo[i] == 'r' && saveWithNo[i + 1] == 'e' &&
         saveWithNo[i + 2] == 't' && saveWithNo[i + 3] == 'u' &&
         saveWithNo[i + 4] == 'r' && saveWithNo[i + 5] == 'n' &&
         i + 5 < saveWithNoIn) {
       isReturn = 1;
-      //  printf("sdfa  in %d %d\n", isInFunc, isReturn);
       i = i + 5;
-      // printf("in %d %d %c %c %c\n", tempCurly.no, startIndx, saveWithNo[i],
-      //        saveWithNo[i + 1], saveWithNo[i - 1]);
     }
-    // printf("\ngh %c %c %c\n", saveWithNo[i], saveWithNo[i + 1],
-    //        saveWithNo[i - 1]);
-    // if(saveWithNo[i+1]=='\n'){
-    //   printf("lock\n");
-    // }
   }
 
-  for (int i = 1; i < tempCurly.no; i++) {
-    printf("%d %d %d\n", CurlyStore[i].no, CurlyStore[i].open,
-           CurlyStore[i].close);
-  }
-  printf("\n\npar\n");
+  printf("\n\nSyntax Errors\n\n");
+  for (int i = 0; i < ifelseTokenTemp.no; i++) {
+    if (ifelseTokenStore[i].store == 1) {
+      printf("Unmatched 'else if' at line %d\n", i);
+    } else if (ifelseTokenStore[i].store == 2) {
+      printf("Unmatched 'else' at line %d\n", i);
+    }
 
-  for (int i = 1; i < tempPar.no; i++) {
-    printf("%d %d %d\n", parStore[i].no, parStore[i].open, parStore[i].close);
-  }
-  printf("\n\nthir\n");
+    if (duplicateTokenStore[i].dupli == 1) {
+      printf("Duplicate token at line %d\n", i + 1);
+    }
 
-  for (int i = 1; i < tempThirdBrac.no; i++) {
-    printf("%d %d %d\n", thirdBrac[i].no, thirdBrac[i].open,
-           thirdBrac[i].close);
+    if (CurlyStore[i + 1].open != 0) {
+      printf("Misplaced '{' at line %d\n", i + 1);
+    }
+    if (CurlyStore[i + 1].close != 0) {
+      printf("Misplaced '}' at line %d\n", i + 1);
+    }
+
+    if (parStore[i + 1].open != 0) {
+      printf("Misplaced '(' at line %d\n", i + 1);
+    }
+    if (parStore[i + 1].close != 0) {
+      printf("Misplaced ')' at line %d\n", i + 1);
+    }
+
+    if (thirdBrac[i + 1].open != 0) {
+      printf("Misplaced '[' at line %d\n", i + 1);
+    }
+    if (thirdBrac[i + 1].close != 0) {
+      printf("Misplaced ']' at line %d\n", i + 1);
+    }
   }
-  printf("\n\nassa\n%s\n", saveWithNo);
+  for (int i = 0; i < serialNo; i++) {
+    if (strlen(tableStore[i].data) == 0 && strlen(tableStore[i].name) != 0 &&
+        strcmp(tableStore[i].name, "printf") == 1) {
+      printf("%s is not Declared \n", tableStore[i].name);
+    }
+  }
+
+  for (int i = 0; i < errorshowNo; i++) {
+    printf("%s identifiers declared multiple times at scope %s\n", errorShow[i].name,errorShow[i].scope);
+  }
   return 0;
 }
