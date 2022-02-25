@@ -89,10 +89,10 @@ int main()
 
     if (Exp() && index==strlen(input))
     {
-        printf("Yes\n", index, strlen(input));
+        printf("String Accepted\n");
     }
     else
     {
-        printf("No\n");
+        printf("String Rejected\n");
     }
 }
