@@ -159,9 +159,9 @@ int asgn_stat()
 {
     if (NumID())
     {
-        if ( input[index] == '=' && index< strlen(input))
+        if (input[index] == '=' && index < strlen(input))
         {
-            index ++;
+            index++;
             if (expn())
                 return 1;
 
@@ -267,7 +267,7 @@ int stat()
         return 1;
 
     index = tempIndex;
- 
+
     if (dscn_stat())
         return 1;
     index = tempIndex;
@@ -279,15 +279,12 @@ int stat()
 
 int main()
 {
-    while (1)
-    {
-        index = 0;
-        printf("Enter the string : ");
-        gets(input);
 
-        if (stat() && index == strlen(input))
-            printf("String Accepted\n");
-        else
-            printf("String Rejected\n");
-    }
+    printf("Enter the string : ");
+    gets(input);
+
+    if (stat() && index == strlen(input))
+        printf("String Accepted\n");
+    else
+        printf("String Rejected\n");
 }
