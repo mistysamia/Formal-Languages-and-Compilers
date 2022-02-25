@@ -26,9 +26,7 @@ int A()
     if (input[index] == 'a' && index < strlen(input))
     {
         index++;
-        int x1 = X();
-
-        if (x1)
+        if (X())
         {
             if (input[index] == 'd')
                 return 1;
