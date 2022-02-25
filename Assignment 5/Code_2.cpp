@@ -87,7 +87,7 @@ int main()
     printf("Enter the string : ");
     gets(input);
 
-    if (Exp())
+    if (Exp() && index==strlen(input))
     {
         printf("Yes\n", index, strlen(input));
     }
