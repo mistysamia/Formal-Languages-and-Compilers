@@ -88,11 +88,8 @@ int main()
     gets(input);
 
     if (Exp() && index==strlen(input))
-    {
         printf("String Accepted\n");
-    }
     else
-    {
         printf("String Rejected\n");
-    }
+    
 }
